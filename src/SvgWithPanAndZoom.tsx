@@ -65,7 +65,13 @@ export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }
     const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
         prevMousePositionRef.current = { clientX: e.clientX, clientY: e.clientY };
 
+        let isDragging = false;
         const handleMouseMove = (moveEvent: MouseEvent) => {
+            if (!isDragging) {
+                document.body.style.cursor = 'all-scroll';
+                isDragging = true;
+            }
+
             const distanceMoved = {
                 x: (prevMousePositionRef.current!.clientX - moveEvent.clientX) / mouseSpeed,
                 y: (prevMousePositionRef.current!.clientY - moveEvent.clientY) / mouseSpeed,
@@ -78,6 +84,7 @@ export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }
         };
 
         const handleMouseUp = () => {
+            document.body.style.cursor = 'default';
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
