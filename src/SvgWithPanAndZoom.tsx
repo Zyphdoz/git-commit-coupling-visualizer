@@ -10,16 +10,14 @@ export type ViewBox = {
 type SVGWithPanAndZoomProps = {
     children: React.ReactNode;
     viewbox: ViewBox;
-    className?: string;
-};
+} & React.SVGProps<SVGSVGElement>;
 
 /**
  * This is like an `<svg></svg>` tag but when you click and drag it pans and when you scroll it zooms.
  * @param children children is expected to be anything that you would normally put inside of an `<svg></svg>` tag.
  * @param viewbox the initial size of the viewbox. note that these values will be changed and managed by this component when the user pans or zooms.
- * @param className optional: you can pass in classes for styling. this would be equivalent to adding classnames to an `<svg></svg>` tag.
  */
-export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, className = '' }: SVGWithPanAndZoomProps) {
+export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }: SVGWithPanAndZoomProps) {
     const [viewbox, setViewbox] = useState<ViewBox>(initialViewbox);
     const prevMousePositionRef = useRef<{ clientX: number; clientY: number }>(null);
 
@@ -103,10 +101,11 @@ export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, className
 
     return (
         <svg
-            className={`border-2 border-red-50 ${className}`}
+            className={`border-2 border-red-50`}
             ref={svgRef}
             viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.w} ${viewbox.h}`}
             onMouseDown={handleMouseDown}
+            {...rest}
         >
             {children}
         </svg>
