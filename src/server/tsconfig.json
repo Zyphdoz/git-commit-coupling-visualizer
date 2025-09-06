@@ -6,9 +6,9 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "outDir": "./dist",
-        "rootDir": "../",
+        "rootDir": "./",
         "sourceMap": false
     },
-    "include": ["./*.ts"],
-    "exclude": ["dist"]
+    "include": ["**/*.ts"],
+    "exclude": ["dist", "readGitFiles/testFileForCountingLines.ts", "**/*.test.ts"]
 }
