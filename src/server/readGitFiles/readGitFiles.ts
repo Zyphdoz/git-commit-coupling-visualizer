@@ -70,7 +70,7 @@ export default getGitTrackedFiles;
  */
 export interface GitCommit {
     commitHash: string;
-    name: string; // contributor name
+    authorName: string;
     date: number; // Unix epoch time (milliseconds)
     changedFiles: string[]; // added or modified files
     comment: string;
@@ -135,7 +135,7 @@ export const getGitHistory = (repoPath: string, includedFiles: string[] = []): G
 
         commits.push({
             commitHash,
-            name: authorName,
+            authorName: authorName,
             date: new Date(isoDate).getTime(),
             changedFiles: matchingFiles,
             comment: commitMessage,
