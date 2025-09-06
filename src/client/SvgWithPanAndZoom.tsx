@@ -9,16 +9,26 @@ export type ViewBox = {
 
 type SVGWithPanAndZoomProps = {
     children: React.ReactNode;
-    viewbox: ViewBox;
+    viewBox: string;
 } & React.SVGProps<SVGSVGElement>;
 
 /**
  * This is like an `<svg></svg>` tag but when you click and drag it pans and when you scroll it zooms.
+ * @param viewBox the initial size of the viewBox. note that these values will be changed and managed by this component when the user pans or zooms.
+ * If you try to modify the viewBox elsewhere it may cause pan and zoom to behave strangely.
+ * Limitations: The width and height of the svg element will be set to the same width and height as the viewBox. (passing in a different width or height will cause the pan speed to not align with the cursor speed)
  * @param children children is expected to be anything that you would normally put inside of an `<svg></svg>` tag.
- * @param viewbox the initial size of the viewbox. note that these values will be changed and managed by this component when the user pans or zooms.
  */
-export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }: SVGWithPanAndZoomProps) {
-    const [viewbox, setViewbox] = useState<ViewBox>(initialViewbox);
+export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZoomProps) {
+    const [viewbox, setViewbox] = useState<ViewBox>(() => {
+        // if a viewBox prop was passed in, we use it,
+        // otherwise default to "0 0 350 150".
+        if (!viewBox || viewBox.split(' ').length !== 4) {
+            return { x: 0, y: 0, w: 350, h: 150 };
+        }
+        const [x, y, w, h] = viewBox.split(' ').map(Number);
+        return { x, y, w, h };
+    });
     const prevMousePositionRef = useRef<{ clientX: number; clientY: number }>(null);
 
     const [mouseSpeed, setMouseSpeed] = useState(1);
@@ -33,7 +43,7 @@ export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }
         const delta = e.deltaY;
 
         // when we pan, we want the cursor to remain on the same place on the svg.
-        // in order to accomplish that, every time we scale the viewbox we also scale the mouseSpeed by the same amount
+        // in order to accomplish that, every time we scale the viewbox we also scale the mouseSpeed (in the SVG space) by the same amount
         if (delta > 0) {
             setMouseSpeed((prevMouseSpeed) => prevMouseSpeed / zoomFactor);
         } else {
@@ -108,6 +118,8 @@ export function SVGWithPanAndZoom({ children, viewbox: initialViewbox, ...rest }
 
     return (
         <svg
+            width={viewBox.split(' ')[2]}
+            height={viewBox.split(' ')[3]}
             className={`border-2 border-red-50`}
             ref={svgRef}
             viewBox={`${viewbox.x} ${viewbox.y} ${viewbox.w} ${viewbox.h}`}
