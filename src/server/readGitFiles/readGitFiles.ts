@@ -4,7 +4,7 @@ import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 
 /**
- * Counts the number of lines in a file efficiently using a stream.
+ * Counts the number of lines in a file.
  * @param filePath - Path to the file.
  * @returns Promise<number> - Number of lines in the file.
  */
@@ -37,15 +37,15 @@ export const countLinesInFile = async (filePath: string): Promise<number> => {
  * This function uses `git ls-files`, as it directly interacts
  * with git index to fetch only the files under version control.
  *
- * @param {string} directoryPath - The path to the directory where Git tracking should be checked.
+ * @param {string} repoPath - The path to the directory where Git tracking should be checked.
  * @param {string[]} [excludeFilters] - Optional array of substrings. Files containing any of these
  *                                      substrings in their paths will be excluded.
  * @returns {Promise<string[]>} - A promise that resolves to an array of file paths, excluding
  *                                those that match any of the filter strings.
  */
-export const getGitTrackedFiles = async (directoryPath: string, excludeFilters: string[] = []): Promise<string[]> => {
+export const getGitTrackedFiles = async (repoPath: string, excludeFilters: string[] = []): Promise<string[]> => {
     const execPromise = promisify(exec);
-    const gitCommand = `git -C "${directoryPath}" ls-files`;
+    const gitCommand = `git -C "${repoPath}" ls-files`;
     try {
         const { stdout } = await execPromise(gitCommand);
         const files = stdout.split('\n').filter(Boolean);
