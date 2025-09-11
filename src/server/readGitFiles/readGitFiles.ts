@@ -147,6 +147,8 @@ export const getGitHistory = (repoPath: string, includedFiles: string[] = []): G
     return commits.reverse();
 };
 
+export type TechDebt = 'low' | 'medium' | 'high';
+
 /**
  * Represents a source file that contains code. The name 'PieceOfCode' is used to avoid
  * ambiguity with 'File', which is often associated with physical file system files.
@@ -158,7 +160,7 @@ export interface PieceOfCode {
     contributors: string[]; // Names of all contributors to this file
     recentContributors: string[]; // Names of all contributors to this file in recent time
     recentlyChangedTogether: { filePath: string; count: number }[]; // Files that were recently changed together with this file
-    techDebtLikelyhood: 'low' | 'medium' | 'high'; // Likelyhood of high interest technical debt in this file
+    techDebtLikelyhood: TechDebt; // Likelyhood of high interest technical debt in this file
 }
 
 /**
@@ -213,7 +215,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
     // add git history and statistics to the files
     const filesWithLineCountAndGitHistory: PieceOfCode[] = [];
     const gitHistory = getGitHistory(repoPath, files);
-    const recencyCutoff = new Date().getTime() - recentThreshold * 86400000; // 86400000ms in one day
+    const recencyCutoff = new Date().getTime() - recentThreshold;
     filesWithLineCount.forEach((file) => {
         const historyForThisFile: GitCommit[] = [];
         const uniqueContributors: string[] = [];

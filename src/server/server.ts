@@ -1,10 +1,9 @@
 import http from 'http';
 import { getRepoStatsInD3CompatibleFormat } from './readGitFiles/readGitFiles';
-import { analyzerConfig } from './analyzerConfig';
-
-export const SERVER_PORT = 3000;
+import { analyzerConfig, SERVER_PORT } from './analyzerConfig';
 
 const server = http.createServer(async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
     res.setHeader('Content-Type', 'application/json');
 
     if (!req.url || !req.headers.host) {

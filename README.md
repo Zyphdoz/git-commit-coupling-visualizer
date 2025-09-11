@@ -28,7 +28,7 @@ This command does three things:
   to access the application.
 - Recompiles the server-side TypeScript code whenever it changes using `tsc --watch`
 - Runs the nodejs server with Nodemon, which restarts the server whenever the compiled code changes. Uses port 3000 by
-  default, can be changed by editing `SERVER_PORT` in server.ts.
+  default, can be changed by editing `SERVER_PORT` in analyzerConfig.ts.
 
 Note that the first time you run this command there is a chance Nodemon will try to start the server before the
 server-code has finished compiling and you will get an error. If that happens, just run the command again and it should
