@@ -27,9 +27,9 @@ const FILE_COLORS: Record<TechDebt, string> = {
     medium: '#ffbf80',
     high: '#e66565',
 };
-const DIRECTORY_FILL_COLOR = '#242424';
+const DIRECTORY_FILL_COLOR = '#101828';
 
-const DIRECTORY_OUTLINE_COLOR = '#888';
+const DIRECTORY_OUTLINE_COLOR = '#311f57';
 
 const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
 
@@ -52,7 +52,7 @@ export default function CircleDiagram() {
     });
 
     const width = window.innerWidth - 300;
-    const height = window.innerHeight - 100;
+    const height = window.innerHeight - 64; // - 64 height to correct for the top and bottom margin
 
     useEffect(() => {
         fetch(`http://localhost:${SERVER_PORT}/api/get-repo-stats`)
@@ -185,11 +185,11 @@ export default function CircleDiagram() {
         return allLines;
     }, [hoveredFilePath, activeFiles, filesByPath]);
 
-    if (error) return <div className="text-red-600">Error: {error}</div>;
+    if (error) return <div className="blue text-red-600">Error: {error}</div>;
 
     return (
-        <div className="relative">
-            <SVGWithPanAndZoom viewBox={`0 0 ${width} ${height}`} className="border border-gray-300">
+        <div className="relative m-8">
+            <SVGWithPanAndZoom viewBox={`0 0 ${width} ${height}`} className="rounded-xl border border-gray-600">
                 <g transform="translate(1,1)">
                     {visualNodes
                         .filter((n) => n.isDirectory)
