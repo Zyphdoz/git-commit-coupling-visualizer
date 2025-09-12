@@ -51,7 +51,7 @@ export default function CircleDiagram() {
         text: '',
     });
 
-    const width = window.innerWidth - 300;
+    const width = window.innerWidth - 300; // - 300 width to make space for the sidebar on the left
     const height = window.innerHeight - 64; // - 64 height to correct for the top and bottom margin
 
     useEffect(() => {
