@@ -35,10 +35,9 @@ export default function CommitHistoryCard({ pieceOfCode }: CommitHistoryCardProp
                                 {commit.comment.slice(0, 100)}
                                 {commit.comment.length > 100 ? ' ...' : ''}
                             </div>
-
                             <ul className="mt-1 px-2">
-                                {commit.changedFiles.map((filePath) => (
-                                    <li className="flex">
+                                {commit.changedFiles.map((filePath, index) => (
+                                    <li key={index} className="flex break-all">
                                         <FileIcon />
                                         {filePath.split('/')[filePath.split('/').length - 1]}
                                     </li>

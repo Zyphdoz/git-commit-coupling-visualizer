@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { SVGWithPanAndZoom } from './SvgWithPanAndZoom';
-import { analyzerConfig, SERVER_PORT } from '../server/analyzerConfig';
+import { analyzerConfig } from '../server/analyzerConfig';
 import type { CollectionOfCode, NestedCodeStructure, PieceOfCode, TechDebt } from '../server/readGitFiles/readGitFiles';
 
 interface TreeNode {
@@ -33,17 +33,21 @@ const DIRECTORY_OUTLINE_COLOR = '#311f57';
 
 const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
 
+export interface CircleDiagramProps {
+    nestedCodeStructure: NestedCodeStructure | null;
+    activeFiles: Set<string>;
+    setActiveFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+}
+
 /**
  * this component fetches `/api/get-repo-stats` and renders the data as a hierarchical circle diagram using d3js.
  * hovering a circle will display how many times that file has been changed since the recencyCutoff and it will
  * draw a line to every file that has been changed in the same commit and display a count on each file indicating how many times
  * it has been changed together with the selected file.
  */
-export default function CircleDiagram() {
-    const [rawData, setRawData] = useState<NestedCodeStructure | null>(null);
-    const [error, setError] = useState<string | null>(null);
+export default function CircleDiagram({ nestedCodeStructure, activeFiles, setActiveFiles }: CircleDiagramProps) {
     const [hoveredFilePath, setHoveredFilePath] = useState<string | null>(null);
-    const [activeFiles, setActiveFiles] = useState<Set<string>>(new Set());
+
     const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; text: string }>({
         visible: false,
         x: 0,
@@ -51,21 +55,11 @@ export default function CircleDiagram() {
         text: '',
     });
 
-    const width = window.innerWidth - 300; // - 300 width to make space for the sidebar on the left
+    const width = window.innerWidth - 400; // - 400 width to make space for the sidebar on the left
     const height = window.innerHeight - 64; // - 64 height to correct for the top and bottom margin
 
-    useEffect(() => {
-        fetch(`http://localhost:${SERVER_PORT}/api/get-repo-stats`)
-            .then((res) => {
-                if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-                return res.json();
-            })
-            .then((json) => setRawData(json as NestedCodeStructure))
-            .catch((err) => setError(String(err)));
-    }, []);
-
     const rootTree = useMemo<TreeNode | null>(() => {
-        if (!rawData) return null;
+        if (!nestedCodeStructure) return null;
         const root: TreeNode = { name: '', fullPath: '', children: new Map(), piece: undefined };
 
         const ensureDir = (dirPath: string) => {
@@ -106,9 +100,9 @@ export default function CircleDiagram() {
             }
         };
 
-        walk(rawData);
+        walk(nestedCodeStructure);
         return root;
-    }, [rawData]);
+    }, [nestedCodeStructure]);
 
     const d3Root = useMemo<d3.HierarchyCircularNode<any> | null>(() => {
         if (!rootTree) return null;
@@ -185,7 +179,33 @@ export default function CircleDiagram() {
         return allLines;
     }, [hoveredFilePath, activeFiles, filesByPath]);
 
-    if (error) return <div className="blue text-red-600">Error: {error}</div>;
+    if (nestedCodeStructure === null)
+        return (
+            <div className="relative m-8">
+                <SVGWithPanAndZoom viewBox={`0 0 ${width} ${height}`} className="rounded-xl border border-gray-600">
+                    <text
+                        className="cursor-grab select-none active:cursor-grabbing"
+                        x={width / 2}
+                        y={height / 2}
+                        fontSize={150}
+                        fill="White"
+                        textAnchor="middle"
+                    >
+                        Loading...
+                    </text>
+                    <text
+                        className="cursor-grab select-none active:cursor-grabbing"
+                        x={width / 2 - 80}
+                        y={height / 2 + 30}
+                        fontSize={18}
+                        fill="gray"
+                        textAnchor="middle"
+                    >
+                        (if the codebase is big this may take a while)
+                    </text>
+                </SVGWithPanAndZoom>
+            </div>
+        );
 
     return (
         <div className="relative m-8">
