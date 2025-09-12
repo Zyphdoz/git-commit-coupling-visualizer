@@ -43,7 +43,7 @@ function App() {
 
     return (
         <div className="flex">
-            <div className="h-screen w-84 overflow-y-auto border-r border-gray-600 bg-[#0f1624] px-6 py-14">
+            <div className="h-screen w-84 overflow-y-auto border-r border-gray-600 bg-[#0f1624] px-6 py-6">
                 {nestedCodeStructure && commitHistoryForActiveFiles(nestedCodeStructure)}
             </div>
             <CircleDiagram

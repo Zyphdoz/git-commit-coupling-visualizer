@@ -37,7 +37,7 @@ export default function CommitHistoryCard({ pieceOfCode }: CommitHistoryCardProp
                             </div>
                             <ul className="mt-1 px-2">
                                 {commit.changedFiles.map((filePath, index) => (
-                                    <li key={index} className="flex break-all">
+                                    <li key={index} className="flex break-all" title={filePath}>
                                         <FileIcon />
                                         {filePath.split('/')[filePath.split('/').length - 1]}
                                     </li>
