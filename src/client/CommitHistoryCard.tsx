@@ -4,13 +4,14 @@ import FileIcon from './svgIcons/fileIcon';
 
 export interface CommitHistoryCardProps {
     pieceOfCode: PieceOfCode;
+    repoUrl: string;
 }
 
 const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
 
-export default function CommitHistoryCard({ pieceOfCode }: CommitHistoryCardProps) {
+export default function CommitHistoryCard({ pieceOfCode, repoUrl }: CommitHistoryCardProps) {
     return (
-        <div className="my-2 rounded-xl border border-[#311f57] px-3 py-2">
+        <div className="my-2 rounded-xl border border-[#311f57] px-3 py-2 pb-5">
             <h2 className="text-l flex">
                 <FileIcon />
                 {pieceOfCode.filePath.split('/')[pieceOfCode.filePath.split('/').length - 1]}
@@ -21,20 +22,43 @@ export default function CommitHistoryCard({ pieceOfCode }: CommitHistoryCardProp
                     <li key={index}>{contributor}</li>
                 ))}
             </ul>
-            <h2 className="text-l mt-1 -mb-2">Recent commits:</h2>
+            <h2 className="text-l mt-1 -mb-4">Recent commits:</h2>
             <ul className="">
                 {pieceOfCode.gitHistory
                     .filter((commit) => commit.date > recencyCutoff)
                     .map((commit, index) => (
-                        <li key={index} className="my-5 text-sm break-words">
-                            <span className="px-2 text-xs">{new Date(commit.date).toLocaleString()}</span>
+                        <li
+                            key={index}
+                            className="relative my-5 rounded-md py-2 text-sm break-words transition-all hover:bg-[#19182e]"
+                        >
+                            <span className="-mb-3 block px-2 text-xs">{new Date(commit.date).toLocaleString()}</span>
                             <br />
-                            <span className="px-2 text-sm">{commit.authorName}</span>
+                            <span className="mx-1 rounded-t-md bg-[#242242] px-2 py-1 text-sm">
+                                {commit.authorName}
+                            </span>
                             <br />
-                            <div className="rounded-md bg-[#111c31] px-2 py-1 text-sm" title={commit.comment}>
-                                {commit.comment.slice(0, 100)}
-                                {commit.comment.length > 100 ? ' ...' : ''}
+                            <div
+                                className="mx-1 rounded-md rounded-tl-none bg-[#242242] px-2 py-1 text-sm"
+                                title={commit.comment}
+                            >
+                                {commit.comment.slice(0, 200)}
+                                {commit.comment.length > 200 ? ' ...' : ''}
                             </div>
+                            <a href={`${repoUrl}/commit/${commit.commitHash}`} title="View on github">
+                                {/**
+                                 * `absolute inset-0 h-auto w-auto` causes this span to expand and fill the entire relative container
+                                 * which has the side effect of making the link apply to the entire area.
+                                 * This approach is better than wrapping the whole list in an <a> tag because
+                                 * that would cause screenreaders to say link and then read out the entire content of the list.
+                                 * With this approch the screenreader will say link and read out only the aria-label "View this commit on github".
+                                 * (good screenreader support aint really that important in the context of this application but I
+                                 * just learned this trick and wanted to use it somewhere so I can refer other people to it when needed)
+                                 */}
+                                <span
+                                    className="absolute inset-0 h-auto w-auto"
+                                    aria-label="View this commit on github"
+                                ></span>
+                            </a>
                             <ul className="mt-1 px-2">
                                 {commit.changedFiles.map((filePath, index) => (
                                     <li key={index} className="flex break-all" title={filePath}>

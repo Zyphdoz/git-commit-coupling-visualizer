@@ -8,6 +8,7 @@ function App() {
     const [nestedCodeStructure, setNestedCodeStructure] = useState<NestedCodeStructure | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeFiles, setActiveFiles] = useState<Set<string>>(new Set());
+    const [repoUrl, setRepoUrl] = useState<string>('');
 
     useEffect(() => {
         fetch(`http://localhost:${SERVER_PORT}/api/get-repo-stats`)
@@ -17,6 +18,14 @@ function App() {
             })
             .then((json) => setNestedCodeStructure(json as NestedCodeStructure))
             .catch((err) => setError(String(err)));
+
+        fetch(`http://localhost:${SERVER_PORT}/api/get-repo-url`)
+            .then((res) => {
+                if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+                return res.json();
+            })
+            .then((json) => setRepoUrl(json))
+            .catch((err) => setError(String(err)));
     }, []);
 
     const commitHistoryForActiveFiles = (structure: NestedCodeStructure): JSX.Element[] | null => {
@@ -25,7 +34,7 @@ function App() {
                 .map((entry) => {
                     if ('filePath' in entry) {
                         if (activeFiles.has(entry.filePath)) {
-                            return <CommitHistoryCard key={entry.filePath} pieceOfCode={entry} />;
+                            return <CommitHistoryCard key={entry.filePath} pieceOfCode={entry} repoUrl={repoUrl} />;
                         }
                     } else if ('children' in entry) {
                         return commitHistoryForActiveFiles(entry.children);

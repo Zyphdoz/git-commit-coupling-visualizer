@@ -1,9 +1,9 @@
 import http from 'http';
-import { getRepoStatsInD3CompatibleFormat } from './readGitFiles/readGitFiles';
+import { getGitRepoUrl, getRepoStatsInD3CompatibleFormat } from './readGitFiles/readGitFiles';
 import { analyzerConfig, SERVER_PORT } from './analyzerConfig';
 
 const server = http.createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // changed from http://localhost:5173/ to * because there may be more vite applications running on the same machine so 5173 may already be in use and vite will take the next available port
     res.setHeader('Content-Type', 'application/json');
 
     if (!req.url || !req.headers.host) {
@@ -21,6 +21,19 @@ const server = http.createServer(async (req, res) => {
         } catch (err) {
             res.statusCode = 500;
             res.end(JSON.stringify({ error: 'Failed to get git-tracked files:', err }));
+        }
+    } else if (req.method === 'GET' && reqUrl.pathname === '/api/get-repo-url') {
+        try {
+            res.statusCode = 200;
+            res.end(JSON.stringify(await getGitRepoUrl(analyzerConfig.repoPath)));
+        } catch (err) {
+            res.statusCode = 500;
+            res.end(
+                JSON.stringify({
+                    error: 'Failed to get repo url. Linking from the sidebar to the commits on github will be disabled.',
+                    err,
+                }),
+            );
         }
     } else {
         res.statusCode = 404;
