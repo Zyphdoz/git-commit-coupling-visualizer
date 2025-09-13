@@ -23,8 +23,8 @@ npm install
 
 ## Configuration
 
-- Edit the file `src/server/ananlyzerConfig.ts` and specify the path to the directory that you want to analyze. This can
-  be an absolute or a relative path.
+- Edit the file `src/server/visualizerConfig.ts` and specify the path to the git directory for the project you want to
+  open. This can be an absolute or a relative path.
 
 ## Running the application:
 
@@ -40,7 +40,7 @@ This command does three things:
   to access the application.
 - Recompiles the server-side TypeScript code whenever it changes using `tsc --watch`
 - Runs the nodejs server with Nodemon, which restarts the server whenever the compiled code changes. Uses port 3000 by
-  default, can be changed by editing `SERVER_PORT` in analyzerConfig.ts.
+  default, can be changed by editing `SERVER_PORT` in visualizerConfig.ts.
 
 Note that the first time you run this command there is a chance Nodemon will try to start the server before the
 server-code has finished compiling and you will get an error. If that happens, just run the command again and it should

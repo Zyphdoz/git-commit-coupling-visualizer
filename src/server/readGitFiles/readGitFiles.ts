@@ -2,7 +2,7 @@ import { createReadStream, existsSync } from 'fs';
 import { createInterface } from 'readline';
 import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
-import { AnalyzerConfig } from '../analyzerConfig';
+import { CircleColor, VisualizerConfig } from '../visualizerConfig';
 
 /**
  * Counts the number of lines in a file.
@@ -147,8 +147,6 @@ export const getGitHistory = (repoPath: string, includedFiles: string[] = []): G
     return commits.reverse();
 };
 
-export type TechDebt = 'low' | 'medium' | 'high';
-
 /**
  * Represents a source file that contains code. The name 'PieceOfCode' is used to avoid
  * ambiguity with 'File', which is often associated with physical file system files.
@@ -160,7 +158,7 @@ export interface PieceOfCode {
     contributors: string[]; // Names of all contributors to this file
     recentContributors: string[]; // Names of all contributors to this file in recent time
     recentlyChangedTogether: { filePath: string; count: number }[]; // Files that were recently changed together with this file
-    techDebtLikelyhood: TechDebt; // Likelyhood of high interest technical debt in this file
+    circleColor: keyof CircleColor;
 }
 
 /**
@@ -185,17 +183,17 @@ export type NestedCodeStructure = (CollectionOfCode | PieceOfCode)[];
  * Generates a hierarchical structure representing the source code files in a Git repository,
  * combined with metadata useful for visualizations like D3 diagrams.
  *
- * @param config - Configuration object following the structure seen in `analyzerConfig.ts`.
+ * @param config - Configuration object following the structure seen in `visualizerConfig.ts`.
  *
  * @returns A nested structure of files and directories, ready to be consumed by a D3 hierarchical circle diagram.
  */
-export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): Promise<NestedCodeStructure> => {
+export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig): Promise<NestedCodeStructure> => {
     const {
         repoPath,
         filesToIgnore,
         recentCutoff,
-        mediumCoChangesThreshold,
-        highCoChangesThreshold,
+        mediumCouplingThreshold,
+        highCouplingThreshold,
         mediumContributorsThreshold,
         highContributorsThreshold,
     } = config;
@@ -255,20 +253,20 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
             count,
         }));
 
-        let techDebtLikelyhood: 'low' | 'medium' | 'high' = 'low';
+        let circleColor: keyof CircleColor = 'green';
         const mostChanges =
             recentlyChangedTogether.length > 0
                 ? Math.max(...recentlyChangedTogether.map((changes) => changes.count))
                 : 0;
-        if (mostChanges >= mediumCoChangesThreshold || recentContributors.length >= mediumContributorsThreshold) {
-            techDebtLikelyhood = 'medium';
+        if (mostChanges >= mediumCouplingThreshold || recentContributors.length >= mediumContributorsThreshold) {
+            circleColor = 'orange';
         }
-        if (mostChanges >= highCoChangesThreshold || recentContributors.length >= highContributorsThreshold) {
-            techDebtLikelyhood = 'high';
+        if (mostChanges >= highCouplingThreshold || recentContributors.length >= highContributorsThreshold) {
+            circleColor = 'red';
         }
         filesWithLineCountAndGitHistory.push({
             filePath: file.path,
-            techDebtLikelyhood: techDebtLikelyhood,
+            circleColor: circleColor,
             linesOfCode: file.lines,
             gitHistory: historyForThisFile,
             contributors: uniqueContributors,
@@ -293,7 +291,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
                     directory = {
                         filePath: file.filePath,
                         linesOfCode: file.linesOfCode,
-                        techDebtLikelyhood: file.techDebtLikelyhood,
+                        circleColor: file.circleColor,
                         gitHistory: file.gitHistory,
                         contributors: file.contributors,
                         recentContributors: file.recentContributors,

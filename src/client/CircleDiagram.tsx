@@ -2,8 +2,8 @@
 import { useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { SVGWithPanAndZoom } from './SvgWithPanAndZoom';
-import { analyzerConfig, SERVER_PORT } from '../server/analyzerConfig';
-import type { CollectionOfCode, NestedCodeStructure, PieceOfCode, TechDebt } from '../server/readGitFiles/readGitFiles';
+import { visualizerConfig, SERVER_PORT, CIRCLE_COLOR } from '../server/visualizerConfig';
+import type { CollectionOfCode, NestedCodeStructure, PieceOfCode } from '../server/readGitFiles/readGitFiles';
 
 interface TreeNode {
     name: string;
@@ -22,11 +22,6 @@ interface VisualNode {
     data: any;
 }
 
-const FILE_COLORS: Record<TechDebt, string> = {
-    low: '#b3ffb3',
-    medium: '#ffbf80',
-    high: '#e66565',
-};
 const DIRECTORY_FILL_COLOR = '#101828';
 
 const DIRECTORY_OUTLINE_COLOR = '#311f57';
@@ -255,8 +250,8 @@ export default function CircleDiagram({
                                     onDoubleClick={(event) => {
                                         event.preventDefault();
                                         openFileInCodeEditor(
-                                            analyzerConfig.repoPath + '/' + n.data.directoryPath ||
-                                                analyzerConfig.repoPath, // open root folder if no directory path
+                                            visualizerConfig.repoPath + '/' + n.data.directoryPath ||
+                                                visualizerConfig.repoPath, // open root folder if no directory path
                                         );
                                     }}
                                 />
@@ -268,7 +263,7 @@ export default function CircleDiagram({
                         .map((n) => {
                             const piece: PieceOfCode = n.data.piece;
                             const filename = (n.data.filePath || n.data.name || '').split('/').pop() || '';
-                            const color = FILE_COLORS[piece.techDebtLikelyhood || 'low'];
+                            const color = piece.circleColor;
                             const isHoveringThis = hoveredFilePath === piece.filePath;
                             const fontSize = Math.min((n.r * 4) / filename.length, n.r / 4);
 
@@ -319,7 +314,7 @@ export default function CircleDiagram({
                                         strokeWidth={isHoveringThis ? 2 : 1}
                                         onDoubleClick={(event) => {
                                             event.preventDefault();
-                                            openFileInCodeEditor(analyzerConfig.repoPath + '/' + piece.filePath);
+                                            openFileInCodeEditor(visualizerConfig.repoPath + '/' + piece.filePath);
                                         }}
                                     />
                                     <text
@@ -349,7 +344,7 @@ export default function CircleDiagram({
                                             <text fontSize={9} fill="#fff" textAnchor="middle" dy={-6}>
                                                 {
                                                     piece.gitHistory.filter(
-                                                        (commit) => commit.date > analyzerConfig.recentCutoff,
+                                                        (commit) => commit.date > visualizerConfig.recentCutoff,
                                                     ).length
                                                 }
                                             </text>
@@ -368,10 +363,10 @@ export default function CircleDiagram({
                                 x2={line.x2}
                                 y2={line.y2}
                                 stroke={
-                                    line.count >= analyzerConfig.highCoChangesThreshold
-                                        ? FILE_COLORS.high
-                                        : line.count >= analyzerConfig.mediumCoChangesThreshold
-                                          ? FILE_COLORS.medium
+                                    line.count >= visualizerConfig.highCouplingThreshold
+                                        ? CIRCLE_COLOR.red
+                                        : line.count >= visualizerConfig.mediumCouplingThreshold
+                                          ? CIRCLE_COLOR.orange
                                           : '#666'
                                 }
                                 strokeOpacity="30%"

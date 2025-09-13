@@ -2,7 +2,7 @@ import { useEffect, useState, type JSX } from 'react';
 import type { NestedCodeStructure } from '../server/readGitFiles/readGitFiles';
 import CircleDiagram from './CircleDiagram';
 import CommitHistoryCard from './CommitHistoryCard';
-import { SERVER_PORT } from '../server/analyzerConfig';
+import { SERVER_PORT } from '../server/visualizerConfig';
 
 function App() {
     const [nestedCodeStructure, setNestedCodeStructure] = useState<NestedCodeStructure | null>(null);

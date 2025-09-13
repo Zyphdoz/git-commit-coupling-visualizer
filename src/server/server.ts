@@ -1,6 +1,6 @@
 import http from 'http';
 import { getGitRepoUrl, getRepoStatsInD3CompatibleFormat } from './readGitFiles/readGitFiles';
-import { analyzerConfig, SERVER_PORT } from './analyzerConfig';
+import { visualizerConfig, SERVER_PORT } from './visualizerConfig';
 import { openInCodeEditor } from './openInCodeEditor/openInCodeEditor';
 
 const server = http.createServer(async (req, res) => {
@@ -18,7 +18,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && reqUrl.pathname === '/api/get-repo-stats') {
         try {
             res.statusCode = 200;
-            res.end(JSON.stringify(await getRepoStatsInD3CompatibleFormat(analyzerConfig)));
+            res.end(JSON.stringify(await getRepoStatsInD3CompatibleFormat(visualizerConfig)));
         } catch (err) {
             res.statusCode = 500;
             res.end(JSON.stringify({ error: 'Failed to get git-tracked files:', err }));
@@ -26,7 +26,7 @@ const server = http.createServer(async (req, res) => {
     } else if (req.method === 'GET' && reqUrl.pathname === '/api/get-repo-url') {
         try {
             res.statusCode = 200;
-            res.end(JSON.stringify(await getGitRepoUrl(analyzerConfig.repoPath)));
+            res.end(JSON.stringify(await getGitRepoUrl(visualizerConfig.repoPath)));
         } catch (err) {
             res.statusCode = 500;
             res.end(
