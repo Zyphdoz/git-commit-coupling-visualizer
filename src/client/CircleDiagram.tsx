@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { SVGWithPanAndZoom } from './SvgWithPanAndZoom';
-import { analyzerConfig } from '../server/analyzerConfig';
+import { analyzerConfig, SERVER_PORT } from '../server/analyzerConfig';
 import type { CollectionOfCode, NestedCodeStructure, PieceOfCode, TechDebt } from '../server/readGitFiles/readGitFiles';
 
 interface TreeNode {
@@ -37,6 +37,7 @@ export interface CircleDiagramProps {
     nestedCodeStructure: NestedCodeStructure | null;
     activeFiles: Set<string>;
     setActiveFiles: React.Dispatch<React.SetStateAction<Set<string>>>;
+    setError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 /**
@@ -45,7 +46,12 @@ export interface CircleDiagramProps {
  * draw a line to every file that has been changed in the same commit and display a count on each file indicating how many times
  * it has been changed together with the selected file.
  */
-export default function CircleDiagram({ nestedCodeStructure, activeFiles, setActiveFiles }: CircleDiagramProps) {
+export default function CircleDiagram({
+    nestedCodeStructure,
+    activeFiles,
+    setActiveFiles,
+    setError,
+}: CircleDiagramProps) {
     const [hoveredFilePath, setHoveredFilePath] = useState<string | null>(null);
 
     const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; text: string }>({
@@ -57,6 +63,17 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
 
     const width = window.innerWidth - 400; // - 400 width to make space for the sidebar on the left
     const height = window.innerHeight - 64; // - 64 height to correct for the top and bottom margin
+
+    const openFileInCodeEditor = (path: string) => {
+        document.body.style.cursor = 'wait';
+        fetch(`http://localhost:${SERVER_PORT}/api/open-in-code-editor?path=${path}`)
+            .then((res) => {
+                document.body.style.cursor = 'default';
+                if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
+                return res.json();
+            })
+            .catch((err) => setError(err));
+    };
 
     const rootTree = useMemo<TreeNode | null>(() => {
         if (!nestedCodeStructure) return null;
@@ -236,6 +253,13 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
                                     fill={DIRECTORY_FILL_COLOR}
                                     stroke={DIRECTORY_OUTLINE_COLOR}
                                     strokeWidth={1}
+                                    onDoubleClick={(event) => {
+                                        event.preventDefault();
+                                        openFileInCodeEditor(
+                                            analyzerConfig.repoPath + '/' + n.data.directoryPath ||
+                                                analyzerConfig.repoPath, // open root folder if no directory path
+                                        );
+                                    }}
                                 />
                             </g>
                         ))}
@@ -261,6 +285,9 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
                                             y: e.clientY + 10,
                                             text: n.data.directoryPath || n.id,
                                         });
+                                        // we set the cursor with js rather than css because if we use css
+                                        // it would take priority over the `wait` cursor when we double click
+                                        document.body.style.cursor = 'pointer';
                                     }}
                                     onMouseMove={(e) =>
                                         tooltip.visible &&
@@ -269,6 +296,9 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
                                     onMouseLeave={() => {
                                         setHoveredFilePath((cur) => (cur === piece.filePath ? null : cur));
                                         setTooltip({ visible: false, x: 0, y: 0, text: '' });
+                                        // we set the cursor with js rather than css because if we use css
+                                        // it would take priority over the `wait` cursos when we double click
+                                        document.body.style.cursor = 'default';
                                     }}
                                     onClick={() => {
                                         setActiveFiles((prev) => {
@@ -280,7 +310,6 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
                                             return newSet;
                                         });
                                     }}
-                                    className="cursor-pointer"
                                 >
                                     <circle
                                         r={n.r}
@@ -289,6 +318,10 @@ export default function CircleDiagram({ nestedCodeStructure, activeFiles, setAct
                                             isHoveringThis || activeFiles.has(piece.filePath) ? 'blue' : 'transparent'
                                         }
                                         strokeWidth={isHoveringThis ? 2 : 1}
+                                        onDoubleClick={(event) => {
+                                            event.preventDefault();
+                                            openFileInCodeEditor(analyzerConfig.repoPath + '/' + piece.filePath);
+                                        }}
                                     />
                                     <text
                                         fontSize={fontSize}

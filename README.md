@@ -1,9 +1,21 @@
-## Prerequisites
+## Controls
 
-Before you begin, ensure you have node.js, npm and git installed on your machine. Additionally this program requires
-permissions to read files and execute the `git log` command in the directory that you want to analyze.
+- Click and drag to pan.
+- Scroll to zoom.
+- Click on a file to toggle the lines and show its recent commit history in the sidebar.
+- Click on a commit in the sidebar to view that commit on GitHub.
+- Double click on a circle to open that file or directory in VS Code (tells node to execute the `code path/to/your/file`
+  command). This command will by default open files in an existing VSCode window and directories in a new window.
+    - If you prefer files to open in your current instance of VS Code, double click files and avoid double clicking
+      directories.
+    - If you prefer opening the files in a separate instance of VS Code, double click the root directory first to spawn
+      a new window for that project and then any files you double click will open in that window.
+    - If you prefer a different code editor, you can replace the command that gets executed in `openInCodeEditor.ts`
+      with an equivalent for your editor.
 
 ## Installing dependencies
+
+Before you begin, ensure you have node.js, npm and git installed on your machine. Install Dependencies with:
 
 ```
 npm install

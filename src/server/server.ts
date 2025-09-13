@@ -1,6 +1,7 @@
 import http from 'http';
 import { getGitRepoUrl, getRepoStatsInD3CompatibleFormat } from './readGitFiles/readGitFiles';
 import { analyzerConfig, SERVER_PORT } from './analyzerConfig';
+import { openInCodeEditor } from './openInCodeEditor/openInCodeEditor';
 
 const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // changed from http://localhost:5173/ to * because there may be more vite applications running on the same machine so 5173 may already be in use and vite will take the next available port
@@ -34,6 +35,23 @@ const server = http.createServer(async (req, res) => {
                     err,
                 }),
             );
+        }
+    } else if (req.method === 'GET' && reqUrl.pathname === '/api/open-in-code-editor') {
+        const path = reqUrl.searchParams.get('path');
+
+        if (!path) {
+            res.statusCode = 400;
+            res.end(JSON.stringify({ error: 'Missing path parameter' }));
+            return;
+        }
+
+        try {
+            await openInCodeEditor(path);
+            res.statusCode = 200;
+            res.end(JSON.stringify({ message: `${path} opened in VS Code` }));
+        } catch (err) {
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: 'Failed to open in VS Code', err }));
         }
     } else {
         res.statusCode = 404;
