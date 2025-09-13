@@ -317,8 +317,8 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
 };
 
 /**
- * Retrieves the URL of the Git repository from the remote upstream.
- * This function runs `git remote get-url upstream` to fetch the URL directly from the repository configuration.
+ * Retrieves the URL of the Git repository from the remote origin.
+ * This function runs `git remote get-url origin` to fetch the URL directly from the repository configuration.
  *
  * @param {string} repoPath - The file path to the Git repository from which to fetch the remote URL.
  * @returns {Promise<string>} - A promise that resolves to the URL of the Git repository.
@@ -326,7 +326,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
  */
 export const getGitRepoUrl = async (repoPath: string): Promise<string> => {
     const execPromise = promisify(exec);
-    const gitCommand = `git -C "${repoPath}" remote get-url upstream`;
+    const gitCommand = `git -C "${repoPath}" remote get-url origin`;
 
     try {
         const { stdout } = await execPromise(gitCommand);
