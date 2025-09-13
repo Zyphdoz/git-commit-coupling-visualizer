@@ -12,20 +12,42 @@ function App() {
 
     useEffect(() => {
         fetch(`http://localhost:${SERVER_PORT}/api/get-repo-stats`)
-            .then((res) => {
-                if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-                return res.json();
+            .then(async (res) => {
+                if (!res.ok) {
+                    const body = await res.json();
+                    throw new Error(`fetch failed: ${res.status}. ${JSON.stringify(body)}`);
+                }
+                const json = await res.json();
+                return json;
             })
             .then((json) => setNestedCodeStructure(json as NestedCodeStructure))
-            .catch((err) => setError(String(err)));
+            .catch((err) =>
+                setError(
+                    String(
+                        err +
+                            '. (if you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.)',
+                    ),
+                ),
+            );
 
         fetch(`http://localhost:${SERVER_PORT}/api/get-repo-url`)
-            .then((res) => {
-                if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
-                return res.json();
+            .then(async (res) => {
+                if (!res.ok) {
+                    const body = await res.json();
+                    throw new Error(`fetch failed: ${res.status}. ${JSON.stringify(body)}`);
+                }
+                const json = await res.json();
+                return json;
             })
             .then((json) => setRepoUrl(json))
-            .catch((err) => setError(String(err)));
+            .catch((err) =>
+                setError(
+                    String(
+                        err +
+                            '. (if you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.)',
+                    ),
+                ),
+            );
     }, []);
 
     const commitHistoryForActiveFiles = (structure: NestedCodeStructure): JSX.Element[] | null => {
@@ -59,6 +81,7 @@ function App() {
                 nestedCodeStructure={nestedCodeStructure}
                 activeFiles={activeFiles}
                 setActiveFiles={setActiveFiles}
+                setError={setError}
             ></CircleDiagram>
         </div>
     );
