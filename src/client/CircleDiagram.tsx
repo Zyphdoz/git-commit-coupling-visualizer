@@ -31,8 +31,6 @@ const DIRECTORY_FILL_COLOR = '#101828';
 
 const DIRECTORY_OUTLINE_COLOR = '#311f57';
 
-const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
-
 export interface CircleDiagramProps {
     nestedCodeStructure: NestedCodeStructure | null;
     activeFiles: Set<string>;
@@ -42,7 +40,7 @@ export interface CircleDiagramProps {
 
 /**
  * this component fetches `/api/get-repo-stats` and renders the data as a hierarchical circle diagram using d3js.
- * hovering a circle will display how many times that file has been changed since the recencyCutoff and it will
+ * hovering a circle will display how many times that file has been changed since the recentCutoff and it will
  * draw a line to every file that has been changed in the same commit and display a count on each file indicating how many times
  * it has been changed together with the selected file. clicking on a file will show the recent commit history for that file in the sidebar
  * and double clicking a file or directory will open it in your code editor.
@@ -350,8 +348,9 @@ export default function CircleDiagram({
                                             />
                                             <text fontSize={9} fill="#fff" textAnchor="middle" dy={-6}>
                                                 {
-                                                    piece.gitHistory.filter((commit) => commit.date > recencyCutoff)
-                                                        .length
+                                                    piece.gitHistory.filter(
+                                                        (commit) => commit.date > analyzerConfig.recentCutoff,
+                                                    ).length
                                                 }
                                             </text>
                                         </g>

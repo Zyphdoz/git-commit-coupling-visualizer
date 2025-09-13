@@ -1,7 +1,7 @@
 export interface AnalyzerConfig {
     repoPath: string; // a path to the git repo that we want to analyze. this can be a relative or absolute path.
     filesToIgnore: string[]; // any files that contain these strings in their name or path will not be included in the analysis.
-    recentThreshold: number; // a commit is considered recent when it is less than this number of milliseconds old. the analyzer will ignore commits that are older than this.
+    recentCutoff: number; // a commit is considered recent when it is newer than this timestamp. the format of the timestamp is the number of milliseconds since the unix epoch.
     mediumCoChangesThreshold: number; // if a file has been modified together with the same file at least this many times in recent changes, it will be flagged as medium likelihood of high interest tech debt.
     highCoChangesThreshold: number; // if a file has been modified together with the same file at least this many times in recent changes, it will be flagged as high likelihood of high interest tech debt.
     // the idea behind the contributor thresholds is that many different people contributing to the same piece of code can make that code harder to understand if everybody has their own coding style,
@@ -17,7 +17,7 @@ export interface AnalyzerConfig {
 
 export const analyzerConfig: AnalyzerConfig = {
     repoPath: '../../',
-    recentThreshold: 182 * 86400000, // 182 days, or 6 months. There are 86400000 ms in one day so to make this number more human readable we can write it as the number of days (182) and multiply by 86400000
+    recentCutoff: new Date().getTime() - 182 * 86400000, // this will not show commits older than 182 days, or 6 months. There are 86400000 ms in one day so to make this number more human readable we can write it as the number of days (182) and multiply by 86400000
     mediumCoChangesThreshold: 3,
     highCoChangesThreshold: 6,
     mediumContributorsThreshold: 3,

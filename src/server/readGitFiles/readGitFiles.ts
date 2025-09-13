@@ -193,7 +193,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
     const {
         repoPath,
         filesToIgnore,
-        recentThreshold,
+        recentCutoff,
         mediumCoChangesThreshold,
         highCoChangesThreshold,
         mediumContributorsThreshold,
@@ -215,7 +215,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
     // add git history and statistics to the files
     const filesWithLineCountAndGitHistory: PieceOfCode[] = [];
     const gitHistory = getGitHistory(repoPath, files);
-    const recencyCutoff = new Date().getTime() - recentThreshold;
+
     filesWithLineCount.forEach((file) => {
         const historyForThisFile: GitCommit[] = [];
         const uniqueContributors: string[] = [];
@@ -228,7 +228,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: AnalyzerConfig): 
                 if (!uniqueContributors.includes(commit.authorName)) {
                     uniqueContributors.push(commit.authorName);
                 }
-                const isRecent = commit.date > recencyCutoff;
+                const isRecent = commit.date > recentCutoff;
                 if (isRecent) {
                     if (!recentContributors.includes(commit.authorName)) {
                         recentContributors.push(commit.authorName);

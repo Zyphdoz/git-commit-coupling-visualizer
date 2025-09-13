@@ -7,13 +7,11 @@ export interface CommitHistoryCardProps {
     repoUrl: string;
 }
 
-const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
-
 /**
  * Displays the commit history for a specific file.
  *
  * This component renders a list of recent contributors and commits for a given file (`pieceOfCode`).
- * It filters the commit history to only show commits that occurred within the defined recency threshold.
+ * It filters the commit history to only show commits that occurred recentCutoff in `analyzerConfig.ts`.
  *
  * Each commit includes:
  * - The commit's author name
@@ -42,7 +40,7 @@ export default function CommitHistoryCard({ pieceOfCode, repoUrl }: CommitHistor
             <h2 className="text-l mt-1 -mb-4">Recent commits:</h2>
             <ul className="">
                 {pieceOfCode.gitHistory
-                    .filter((commit) => commit.date > recencyCutoff)
+                    .filter((commit) => commit.date > analyzerConfig.recentCutoff)
                     .map((commit, index) => (
                         <li
                             key={index}
