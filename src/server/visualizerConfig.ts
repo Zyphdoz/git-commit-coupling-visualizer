@@ -41,6 +41,6 @@ export const CIRCLE_COLOR = {
     red: '#e66565',
 } as const;
 
-export type CircleColor = typeof CIRCLE_COLOR;
+export type CircleColor = (typeof CIRCLE_COLOR)[keyof typeof CIRCLE_COLOR];
 
 export const SERVER_PORT = 3000;

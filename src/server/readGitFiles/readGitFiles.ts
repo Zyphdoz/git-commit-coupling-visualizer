@@ -2,7 +2,7 @@ import { createReadStream, existsSync } from 'fs';
 import { createInterface } from 'readline';
 import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
-import { CircleColor, VisualizerConfig } from '../visualizerConfig';
+import { CIRCLE_COLOR, CircleColor, VisualizerConfig } from '../visualizerConfig';
 
 /**
  * Counts the number of lines in a file.
@@ -158,7 +158,7 @@ export interface PieceOfCode {
     contributors: string[]; // Names of all contributors to this file
     recentContributors: string[]; // Names of all contributors to this file in recent time
     recentlyChangedTogether: { filePath: string; count: number }[]; // Files that were recently changed together with this file
-    circleColor: keyof CircleColor;
+    circleColor: CircleColor;
 }
 
 /**
@@ -253,16 +253,16 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
             count,
         }));
 
-        let circleColor: keyof CircleColor = 'green';
+        let circleColor: CircleColor = CIRCLE_COLOR.green;
         const mostChanges =
             recentlyChangedTogether.length > 0
                 ? Math.max(...recentlyChangedTogether.map((changes) => changes.count))
                 : 0;
         if (mostChanges >= mediumCouplingThreshold || recentContributors.length >= mediumContributorsThreshold) {
-            circleColor = 'orange';
+            circleColor = CIRCLE_COLOR.orange;
         }
         if (mostChanges >= highCouplingThreshold || recentContributors.length >= highContributorsThreshold) {
-            circleColor = 'red';
+            circleColor = CIRCLE_COLOR.red;
         }
         filesWithLineCountAndGitHistory.push({
             filePath: file.path,
