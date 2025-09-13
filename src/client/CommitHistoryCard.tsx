@@ -9,6 +9,23 @@ export interface CommitHistoryCardProps {
 
 const recencyCutoff = new Date().getTime() - analyzerConfig.recentThreshold;
 
+/**
+ * Displays the commit history for a specific file.
+ *
+ * This component renders a list of recent contributors and commits for a given file (`pieceOfCode`).
+ * It filters the commit history to only show commits that occurred within the defined recency threshold.
+ *
+ * Each commit includes:
+ * - The commit's author name
+ * - A brief snippet of the commit comment (truncated to 200 characters)
+ * - A link to the commit on GitHub
+ *
+ * The component provides a clear overview of recent changes to the file and offers links to view
+ * the commits directly on GitHub.
+ *
+ * @param pieceOfCode - A `PieceOfCode` object containing details about the file, including recent contributors and commit history.
+ * @param repoUrl - The base URL of the repository used to construct links to view individual commits on GitHub.
+ */
 export default function CommitHistoryCard({ pieceOfCode, repoUrl }: CommitHistoryCardProps) {
     return (
         <div className="my-2 rounded-xl border border-[#311f57] px-3 py-2 pb-5">

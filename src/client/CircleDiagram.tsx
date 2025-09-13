@@ -44,7 +44,8 @@ export interface CircleDiagramProps {
  * this component fetches `/api/get-repo-stats` and renders the data as a hierarchical circle diagram using d3js.
  * hovering a circle will display how many times that file has been changed since the recencyCutoff and it will
  * draw a line to every file that has been changed in the same commit and display a count on each file indicating how many times
- * it has been changed together with the selected file.
+ * it has been changed together with the selected file. clicking on a file will show the recent commit history for that file in the sidebar
+ * and double clicking a file or directory will open it in your code editor.
  */
 export default function CircleDiagram({
     nestedCodeStructure,

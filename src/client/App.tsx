@@ -50,6 +50,13 @@ function App() {
             );
     }, []);
 
+    /**
+     * This function recursively traverses through the nested `NestedCodeStructure` object, checking each file's
+     * `filePath` against the `activeFiles` set. If the file is active, a corresponding
+     * `<CommitHistoryCard>` component is returned for that file, rendering its commit history.
+     * @param structure - A `NestedCodeStructure` representing the codebase, which may include files and subdirectories.
+     * @returns An array of `<CommitHistoryCard>` components for the active files or null if no active files match.
+     */
     const commitHistoryForActiveFiles = (structure: NestedCodeStructure): JSX.Element[] | null => {
         return (
             structure
@@ -63,7 +70,7 @@ function App() {
                     }
                     return null;
                 })
-                // since not every entry in our nested has a matching filepath, we are going to end up
+                // since not every entry in our nested object has a matching filepath, we are going to end up
                 // with a mix of `<CommitHistoryCard>` and `null` values in our array so we need to filter out null values
                 // .filter(Boolean) is a concise way of removing all falsy values from an array.
                 .filter(Boolean) as JSX.Element[]
