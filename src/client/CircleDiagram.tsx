@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { SVGWithPanAndZoom } from './SvgWithPanAndZoom';
 import { visualizerConfig, SERVER_PORT, CIRCLE_COLOR } from '../server/visualizerConfig';
@@ -55,8 +55,24 @@ export default function CircleDiagram({
         text: '',
     });
 
-    const width = window.innerWidth - 400; // - 400 width to make space for the sidebar on the left
-    const height = window.innerHeight - 64; // - 64 height to correct for the top and bottom margin
+    const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
+        width: window.innerWidth - 400, // - 400 width to make space for the sidebar on the left
+        height: window.innerHeight - 64, // - 64 height to correct for the top and bottom margin
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowSize({
+                width: window.innerWidth - 400,
+                height: window.innerHeight - 64,
+            });
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const openFileInCodeEditor = (path: string) => {
         document.body.style.cursor = 'wait';
@@ -144,9 +160,9 @@ export default function CircleDiagram({
 
         return d3
             .pack()
-            .size([width - 2, height - 2])
+            .size([windowSize.width - 2, windowSize.height - 2])
             .padding(4)(hierarchy);
-    }, [rootTree, height, width]);
+    }, [rootTree, windowSize.height, windowSize.width]);
 
     const { visualNodes, filesByPath } = useMemo(() => {
         if (!d3Root) return { visualNodes: [], filesByPath: new Map<string, d3.HierarchyCircularNode<any>>() };
@@ -193,11 +209,14 @@ export default function CircleDiagram({
     if (nestedCodeStructure === null)
         return (
             <div className="relative m-8">
-                <SVGWithPanAndZoom viewBox={`0 0 ${width} ${height}`} className="rounded-xl border border-gray-600">
+                <SVGWithPanAndZoom
+                    viewBox={`0 0 ${windowSize.width} ${windowSize.height}`}
+                    className="rounded-xl border border-gray-600"
+                >
                     <text
                         className="cursor-grab select-none active:cursor-grabbing"
-                        x={width / 2}
-                        y={height / 2}
+                        x={windowSize.width / 2}
+                        y={windowSize.height / 2}
                         fontSize={150}
                         fill="White"
                         textAnchor="middle"
@@ -206,8 +225,8 @@ export default function CircleDiagram({
                     </text>
                     <text
                         className="cursor-grab select-none active:cursor-grabbing"
-                        x={width / 2 - 80}
-                        y={height / 2 + 30}
+                        x={windowSize.width / 2 - 80}
+                        y={windowSize.height / 2 + 30}
                         fontSize={18}
                         fill="gray"
                         textAnchor="middle"
@@ -220,7 +239,10 @@ export default function CircleDiagram({
 
     return (
         <div className="relative m-8">
-            <SVGWithPanAndZoom viewBox={`0 0 ${width} ${height}`} className="rounded-xl border border-gray-600">
+            <SVGWithPanAndZoom
+                viewBox={`0 0 ${windowSize.width} ${windowSize.height}`}
+                className="rounded-xl border border-gray-600"
+            >
                 <g transform="translate(1,1)">
                     {visualNodes
                         .filter((n) => n.isDirectory)
