@@ -20,16 +20,10 @@ when the same files are frequently being changed together.
 ## How to read the diagram
 
 ![screenshot explaining that the number on the selected file, in this case 8, means that the file has been recently changed in 8 commits. the numbers on all the other files is how many times those files have changed together with the selected file. for example: out of the eight commits where en.json was changed, binding.ts was changed in two of them.](https://raw.githubusercontent.com/Zyphdoz/git-commit-coupling-visualizer/master/assets/readme-screenshots/locales-en-with-annotations.png)
-Color coding:
-
-- Orange: the file has been changed together with the same file 3 or more times, or has been changed by 3 or more
-  contributors in recent commits
-- Red: the file has been changed together with the same file 6 or more times, or has been changed by 5 or more
-  contributors in recent commits.
-- Green: the rest of the files, which does not meet any of the conditions above.
-
-All of these values and the cutoff for what counts as a recent commit can be configured in the config file in
-`src/server/visualizerConfig.ts`.
+Zoom in on the image to read an explanation of what the numbers mean. The files are color coded based on the number of
+times they have recently been changed together with the same file or based on how many different contributors have
+recently changed the file. The thresholds for the different colors and the cutoff for what counts as a recent commit can
+be configured in the config file in `src/server/visualizerConfig.ts`.
 
 Note that the default values are not necessarily recommended values. You are encouraged to change and experiment with
 the cutoff and thresholds as different numbers may be better suited for different projects and use cases.
