@@ -304,7 +304,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
     const nestedCodeStructure: NestedCodeStructure = [];
 
     filesWithLineCountAndGitHistory.forEach((file) => {
-        const fileParts = file.filePath.split('/');
+        const fileParts = file.filePath.split(path.sep);
         let currentLevel = nestedCodeStructure;
 
         fileParts.forEach((part, index) => {
@@ -323,7 +323,7 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
                         recentlyChangedTogether: file.recentlyChangedTogether,
                     };
                 } else {
-                    const directoryPath = fileParts.slice(0, index + 1).join('/');
+                    const directoryPath = fileParts.slice(0, index + 1).join(path.sep);
                     directory = { directoryPath: directoryPath, children: [] };
                 }
 
