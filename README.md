@@ -1,4 +1,4 @@
-![Screenshot of the asbplayer codebase opened in visualizer](./assets/readme-screenshots/overview.png)
+![Screenshot of the asbplayer codebase opened in visualizer](https://raw.githubusercontent.com/Zyphdoz/git-commit-coupling-visualizer/master/assets/readme-screenshots/overview.png)
 
 # Git Commit Coupling Visualizer
 
@@ -14,12 +14,12 @@ when the same files are frequently being changed together.
   any technical debt here will not just slow down one person, it will slow down many people
 - Limit the tool to only show recent commits so that you can prioritize fixing high interest techical debt in code that
   is actively being changed rather than wasting time fixing coupling in old files that never change
-- Or you can just use this as a fancy way to navigate your project because double-clicking the circles opens the files
-  directly in your editor
+- Or you can just use this as a fancy way to navigate and familiarize yourself with a new codebase because
+  double-clicking the circles opens the files directly in your editor
 
 ## How to read the diagram
 
-![screenshot explaining that the number on the selected file, in this case 8, means that the file has been recently changed in 8 commits. the numbers on all the other files is how many times those files have changed together with the selected file. for example: out of the eight commits where en.json was changed, binding.ts was changed in two of them.](./assets/readme-screenshots/locales-en-with-annotations.png)
+![screenshot explaining that the number on the selected file, in this case 8, means that the file has been recently changed in 8 commits. the numbers on all the other files is how many times those files have changed together with the selected file. for example: out of the eight commits where en.json was changed, binding.ts was changed in two of them.](https://raw.githubusercontent.com/Zyphdoz/git-commit-coupling-visualizer/master/assets/readme-screenshots/locales-en-with-annotations.png)
 Color coding:
 
 - Orange: the file has been changed together with the same file 3 or more times, or has been changed by 3 or more
