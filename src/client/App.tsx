@@ -21,14 +21,15 @@ function App() {
                 return json;
             })
             .then((json) => setNestedCodeStructure(json as NestedCodeStructure))
-            .catch((err) =>
-                setError(
-                    String(
-                        err +
-                            '. (if you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.)',
-                    ),
-                ),
-            );
+            .catch((err) => {
+                if (err.message === 'Failed to fetch') {
+                    setError(
+                        'Error: fethcing /api/get-repo-stats failed. If you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.',
+                    );
+                } else {
+                    setError(String(err));
+                }
+            });
 
         fetch(`http://localhost:${SERVER_PORT}/api/get-repo-url`)
             .then(async (res) => {
@@ -40,14 +41,15 @@ function App() {
                 return json;
             })
             .then((json) => setRepoUrl(json))
-            .catch((err) =>
-                setError(
-                    String(
-                        err +
-                            '. (if you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.)',
-                    ),
-                ),
-            );
+            .catch((err) => {
+                if (err.message === 'Failed to fetch') {
+                    setError(
+                        'Error: fethcing /api/get-repo-url failed. If you just started the app and immediately went to this page and this is the first thing you see, this error is likely due to the server not being ready yet when you opened the page. Try refreshing this page.',
+                    );
+                } else {
+                    setError(String(err));
+                }
+            });
     }, []);
 
     /**
