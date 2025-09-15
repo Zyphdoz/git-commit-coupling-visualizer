@@ -55,14 +55,14 @@ export default function CircleDiagram({
         text: '',
     });
 
-    const [windowSize, setWindowSize] = useState<{ width: number; height: number }>({
+    const [svgSize, setSvgSize] = useState<{ width: number; height: number }>({
         width: window.innerWidth - 400, // - 400 width to make space for the sidebar on the left
         height: window.innerHeight - 64, // - 64 height to correct for the top and bottom margin
     });
 
     useEffect(() => {
         const handleResize = () => {
-            setWindowSize({
+            setSvgSize({
                 width: window.innerWidth - 400,
                 height: window.innerHeight - 64,
             });
@@ -160,9 +160,9 @@ export default function CircleDiagram({
 
         return d3
             .pack()
-            .size([windowSize.width - 2, windowSize.height - 2])
+            .size([svgSize.width - 2, svgSize.height - 2])
             .padding(4)(hierarchy);
-    }, [rootTree, windowSize.height, windowSize.width]);
+    }, [rootTree, svgSize.height, svgSize.width]);
 
     const { visualNodes, filesByPath } = useMemo(() => {
         if (!d3Root) return { visualNodes: [], filesByPath: new Map<string, d3.HierarchyCircularNode<any>>() };
@@ -210,13 +210,13 @@ export default function CircleDiagram({
         return (
             <div className="relative m-8">
                 <SVGWithPanAndZoom
-                    viewBox={`0 0 ${windowSize.width} ${windowSize.height}`}
+                    viewBox={`0 0 ${svgSize.width} ${svgSize.height}`}
                     className="rounded-xl border border-gray-600"
                 >
                     <text
                         className="cursor-grab select-none active:cursor-grabbing"
-                        x={windowSize.width / 2}
-                        y={windowSize.height / 2}
+                        x={svgSize.width / 2}
+                        y={svgSize.height / 2}
                         fontSize={150}
                         fill="White"
                         textAnchor="middle"
@@ -225,8 +225,8 @@ export default function CircleDiagram({
                     </text>
                     <text
                         className="cursor-grab select-none active:cursor-grabbing"
-                        x={windowSize.width / 2 - 80}
-                        y={windowSize.height / 2 + 30}
+                        x={svgSize.width / 2 - 80}
+                        y={svgSize.height / 2 + 30}
                         fontSize={18}
                         fill="gray"
                         textAnchor="middle"
@@ -240,7 +240,7 @@ export default function CircleDiagram({
     return (
         <div className="relative m-8">
             <SVGWithPanAndZoom
-                viewBox={`0 0 ${windowSize.width} ${windowSize.height}`}
+                viewBox={`0 0 ${svgSize.width} ${svgSize.height}`}
                 className="rounded-xl border border-gray-600"
             >
                 <g transform="translate(1,1)">
