@@ -1,4 +1,3 @@
-import { visualizerConfig } from '../server/visualizerConfig';
 import type { PieceOfCode } from '../server/readGitFiles/readGitFiles';
 import FileIcon from './svgIcons/fileIcon';
 
@@ -11,7 +10,6 @@ export interface CommitHistoryCardProps {
  * Displays the commit history for a specific file.
  *
  * This component renders a list of recent contributors and commits for a given file (`pieceOfCode`).
- * It filters the commit history to only show commits that occurred recentCutoff in `visualizerConfig.ts`.
  *
  * Each commit includes:
  * - The commit's author name
@@ -40,7 +38,6 @@ export default function CommitHistoryCard({ pieceOfCode, repoUrl }: CommitHistor
             <h2 className="text-l mt-1 -mb-4">Recent commits:</h2>
             <ul className="">
                 {pieceOfCode.gitHistory
-                    .filter((commit) => commit.date > visualizerConfig.recentCutoff)
                     .map((commit, index) => (
                         <li
                             key={index}

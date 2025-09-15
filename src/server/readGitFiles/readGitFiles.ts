@@ -1,8 +1,9 @@
-import { createReadStream, existsSync } from 'fs';
+import { createReadStream, existsSync, promises } from 'fs';
 import { createInterface } from 'readline';
-import { exec, execSync } from 'child_process';
+import { exec, spawnSync } from 'child_process';
 import { promisify } from 'util';
-import { CIRCLE_COLOR, CircleColor, VisualizerConfig } from '../visualizerConfig';
+import { CIRCLE_COLOR, CircleColor, visualizerConfig, VisualizerConfig } from '../visualizerConfig';
+import path from 'path';
 
 /**
  * Counts the number of lines in a file.
@@ -10,11 +11,15 @@ import { CIRCLE_COLOR, CircleColor, VisualizerConfig } from '../visualizerConfig
  * @returns Promise<number> - Number of lines in the file.
  */
 export const countLinesInFile = async (filePath: string): Promise<number> => {
-    return new Promise((resolve, reject) => {
+    try {
+        await promises.access(filePath);
+
         let lineCount = 0;
 
         const fileStream = createReadStream(filePath);
-        fileStream.on('error', reject);
+        fileStream.on('error', (err) => {
+            throw err;
+        });
 
         const rl = createInterface({
             input: fileStream,
@@ -25,10 +30,17 @@ export const countLinesInFile = async (filePath: string): Promise<number> => {
             lineCount++;
         });
 
-        rl.on('close', () => {
-            resolve(lineCount);
+        return new Promise((resolve, reject) => {
+            rl.on('close', () => {
+                resolve(lineCount);
+            });
+
+            rl.on('error', reject);
         });
-    });
+    } catch (error) {
+        console.log(`File does not exist or cannot be accessed: ${filePath}`);
+        throw error;
+    }
 };
 
 /**
@@ -54,7 +66,16 @@ export const getGitTrackedFiles = async (repoPath: string, excludeFilters: strin
         if (excludeFilters.length === 0) {
             return files;
         }
-        return files.filter((filePath) => !excludeFilters.some((filter) => filePath.includes(filter)));
+        return files
+            .filter((filePath) => !excludeFilters.some((filter) => filePath.includes(filter)))
+            .map((file) => {
+                const normalizedFile = path.normalize(file);
+                // AI is capable of putting en dashes and other bs in file paths now...
+                // I encountered two instances of that when I tested this tool on the react codebase.
+                // en dash in filepaths becomes \342\200\223 when we list files using git ls-files
+                // so we have to replace that with an actual en dash to get things working again...
+                return normalizedFile.replace('\\342\\200\\223', '–').replace(/^\\?"|"\\?$/g, '');
+            });
     } catch (error) {
         if (error instanceof Error) {
             throw new Error(`Error in getGitTrackedFiles: ${error.message}`);
@@ -105,45 +126,56 @@ export const getGitHistory = (repoPath: string, includedFiles: string[] = []): G
         return [];
     }
 
-    // ISO 8601 dates are used in Git log output to ensure time zone consistency and reliable parsing into epoch timestamps.
     const gitLogFormat = '--COMMIT--%n%H|%an|%aI|%s';
-    const gitCommand = `git log --name-status --pretty=format:"${gitLogFormat}"`;
+    const args = [
+        'log',
+        '--name-status',
+        `--pretty=format:${gitLogFormat}`,
+        '--since',
+        new Date(visualizerConfig.recentCutoff).toISOString().split('T').join(' ').split('Z')[0],
+        '--',
+        ...includedFiles,
+    ];
 
-    const rawOutput = execSync(gitCommand, { cwd: repoPath }).toString('utf-8');
+    const result = spawnSync('git', args, {
+        cwd: repoPath,
+        encoding: 'utf-8',
+        maxBuffer: Infinity,
+    });
 
+    if (result.error) {
+        throw result.error;
+    }
+    if (result.status !== 0) {
+        throw new Error(result.stderr);
+    }
+
+    const rawOutput = result.stdout;
     const commits: GitCommit[] = [];
-    const entries = rawOutput.split('--COMMIT--').filter((entry) => entry.trim());
-
-    // Convert to set for faster lookups
-    const includedFileSet = new Set(includedFiles);
+    const entries = rawOutput.split('--COMMIT--').filter((e) => e.trim());
 
     for (const entry of entries) {
         const [headerLine, ...fileLines] = entry.trim().split('\n');
         const [commitHash, authorName, isoDate, commitMessage] = headerLine.split('|');
-        const matchingFiles: string[] = [];
 
+        const changedFiles: string[] = [];
         for (const line of fileLines) {
             const [status, filePath] = line.split('\t');
-
             if (!filePath || status === 'D') continue;
-
-            if (includedFileSet.has(filePath)) {
-                matchingFiles.push(filePath);
-            }
+            changedFiles.push(filePath);
         }
 
-        if (matchingFiles.length === 0) continue;
+        if (changedFiles.length === 0) continue;
 
         commits.push({
             commitHash,
-            authorName: authorName,
+            authorName,
             date: new Date(isoDate).getTime(),
-            changedFiles: matchingFiles,
+            changedFiles,
             comment: commitMessage,
         });
     }
 
-    // reverse because the git log command outputs the newest commits at the top
     return commits.reverse();
 };
 
@@ -191,7 +223,6 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
     const {
         repoPath,
         filesToIgnore,
-        recentCutoff,
         mediumCouplingThreshold,
         highCouplingThreshold,
         mediumContributorsThreshold,
@@ -226,25 +257,19 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
                 if (!uniqueContributors.includes(commit.authorName)) {
                     uniqueContributors.push(commit.authorName);
                 }
-                const isRecent = commit.date > recentCutoff;
-                if (isRecent) {
-                    if (!recentContributors.includes(commit.authorName)) {
-                        recentContributors.push(commit.authorName);
-                    }
-                    commit.changedFiles.forEach((changedFile) => {
-                        if (changedFile === file.path) {
-                            // empty block because a file will always change together with itselft and
-                            // we don't want to have an entry that shows how many times the file got changed with itself
-                        } else if (recentlyChangedTogetherMap.has(changedFile)) {
-                            recentlyChangedTogetherMap.set(
-                                changedFile,
-                                recentlyChangedTogetherMap.get(changedFile)! + 1,
-                            );
-                        } else {
-                            recentlyChangedTogetherMap.set(changedFile, 1);
-                        }
-                    });
+                if (!recentContributors.includes(commit.authorName)) {
+                    recentContributors.push(commit.authorName);
                 }
+                commit.changedFiles.forEach((changedFile) => {
+                    if (changedFile === file.path) {
+                        // empty block because a file will always change together with itselft and
+                        // we don't want to have an entry that shows how many times the file got changed with itself
+                    } else if (recentlyChangedTogetherMap.has(changedFile)) {
+                        recentlyChangedTogetherMap.set(changedFile, recentlyChangedTogetherMap.get(changedFile)! + 1);
+                    } else {
+                        recentlyChangedTogetherMap.set(changedFile, 1);
+                    }
+                });
             }
         });
 
@@ -310,7 +335,6 @@ export const getRepoStatsInD3CompatibleFormat = async (config: VisualizerConfig)
             }
         });
     });
-
     return nestedCodeStructure;
 };
 

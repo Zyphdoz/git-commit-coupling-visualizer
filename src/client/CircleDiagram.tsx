@@ -364,11 +364,7 @@ export default function CircleDiagram({
                                                 fillOpacity="50%"
                                             />
                                             <text fontSize={9} fill="#fff" textAnchor="middle" dy={-6}>
-                                                {
-                                                    piece.gitHistory.filter(
-                                                        (commit) => commit.date > visualizerConfig.recentCutoff,
-                                                    ).length
-                                                }
+                                                {piece.gitHistory.length}
                                             </text>
                                         </g>
                                     )}
