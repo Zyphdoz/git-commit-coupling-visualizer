@@ -62,36 +62,3 @@ const server = http.createServer(async (req, res) => {
 server.listen(SERVER_PORT, () => {
     console.log(`Server is running on http://localhost:${SERVER_PORT}`);
 });
-
-const shutdownServer = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        server.close((err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
-};
-
-let shuttingDown = false;
-async function shutdown() {
-    if (shuttingDown) {
-        console.error(
-            'Error while trying to shutdown the server. We just attempted to call the shutdown function while we were already trying to shut down.',
-        );
-        process.exit(1);
-    }
-    shuttingDown = true;
-    try {
-        await Promise.all([shutdownServer()]);
-        process.exit(0);
-    } catch (error) {
-        console.error(`Error while trying to gracefully shotdown: ${error}`);
-        process.exit(1);
-    }
-}
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
