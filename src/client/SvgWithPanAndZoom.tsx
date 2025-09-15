@@ -31,7 +31,7 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
     });
     const prevMousePositionRef = useRef<{ clientX: number; clientY: number }>(null);
 
-    const [mouseSpeed, setMouseSpeed] = useState(1);
+    const [svgPanSpeed, setSvgPanSpeed] = useState(1);
 
     const svgRef = useRef<SVGSVGElement>(null);
 
@@ -41,7 +41,7 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
     });
     // if the parent changes the viewBox prop (which it does on resize),
     // then it will cause panning to go out of sync with the mouse speed.
-    // as a quick fix, we reset the viewbox, svgSize and mouseSpeed when this happens.
+    // as a quick fix, we reset the viewbox, svgSize and svgPanSpeed when this happens.
     // we could create a better user experience if we instead make it so the svg zoom does not reset and our position in the diagram does not move
     // when the window is resized but that requires more thinking to figure out and this is good enough for now.
     useEffect(() => {
@@ -50,7 +50,7 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
             return { x, y, w, h };
         });
         setSvgSize({ width: viewBox.split(' ')[2], height: viewBox.split(' ')[3] });
-        setMouseSpeed(1);
+        setSvgPanSpeed(1);
     }, [viewBox]);
 
     const handleWheel = (e: WheelEvent) => {
@@ -61,11 +61,11 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
         const delta = e.deltaY;
 
         // when we pan, we want the cursor to remain on the same place on the svg.
-        // in order to accomplish that, every time we scale the viewbox we also scale the mouseSpeed (in the SVG space) by the same amount
+        // in order to accomplish that, every time we scale the viewbox we also scale the svgPanSpeed by the same amount
         if (delta > 0) {
-            setMouseSpeed((prevMouseSpeed) => prevMouseSpeed / zoomFactor);
+            setSvgPanSpeed((prevSvgPanSpeed) => prevSvgPanSpeed / zoomFactor);
         } else {
-            setMouseSpeed((prevMouseSpeed) => prevMouseSpeed * zoomFactor);
+            setSvgPanSpeed((prevSvgPanSpeed) => prevSvgPanSpeed * zoomFactor);
         }
 
         // this code ensures the svg coordinates under the cursor remains the same after zooming
@@ -101,8 +101,8 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
             }
 
             const distanceMoved = {
-                x: (prevMousePositionRef.current!.clientX - moveEvent.clientX) / mouseSpeed,
-                y: (prevMousePositionRef.current!.clientY - moveEvent.clientY) / mouseSpeed,
+                x: (prevMousePositionRef.current!.clientX - moveEvent.clientX) / svgPanSpeed,
+                y: (prevMousePositionRef.current!.clientY - moveEvent.clientY) / svgPanSpeed,
             };
 
             setViewbox((prevViewbox) => {
