@@ -34,11 +34,7 @@ export function SVGWithPanAndZoom({ children, viewBox, ...rest }: SVGWithPanAndZ
         width: viewBox.split(' ')[2],
         height: viewBox.split(' ')[3],
     });
-    // if the parent changes the viewBox prop (which it does on resize),
-    // then it will cause panning to go out of sync with the mouse speed.
-    // as a quick fix, we reset the viewbox, svgSize and svgPanSpeed when this happens.
-    // we could create a better user experience if we instead make it so the svg zoom does not reset and our position in the diagram does not move
-    // when the window is resized but that requires more thinking to figure out and this is good enough for now.
+
     useEffect(() => {
         viewBoxRef.current = { x: 0, y: 0, w: parseInt(viewBox.split(' ')[2]), h: parseInt(viewBox.split(' ')[3]) };
         setSvgSize({ width: viewBox.split(' ')[2], height: viewBox.split(' ')[3] });
