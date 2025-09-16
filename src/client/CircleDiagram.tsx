@@ -297,7 +297,7 @@ export default function CircleDiagram({
                         .filter((n) => !n.isDirectory)
                         .map((n) => {
                             const piece: PieceOfCode = n.data.piece;
-                            const filename = (n.data.filePath || n.data.name || '').split('/').pop() || '';
+                            const filename = (n.data.filePath || n.data.name || '').split(/[\\/]/).pop() || ''; // regex matches on both \ and /
                             const color = piece.circleColor;
                             const isHoveringThis = hoveredFilePath === piece.filePath;
                             const fontSize = Math.min((n.r * 4) / filename.length, n.r / 4);
