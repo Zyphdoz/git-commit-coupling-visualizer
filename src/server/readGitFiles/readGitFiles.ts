@@ -74,7 +74,7 @@ export const getGitTrackedFiles = async (repoPath: string, excludeFilters: strin
                 // I encountered two instances of that when I tested this tool on the react codebase.
                 // en dash in filepaths becomes \342\200\223 when we list files using git ls-files
                 // so we have to replace that with an actual en dash to get things working again...
-                return normalizedFile.replace('\\342\\200\\223', '–').replace(/^\\?"|"\\?$/g, '');
+                return normalizedFile.replace('\\342\\200\\223', '–').replaceAll('"', '');
             });
     } catch (error) {
         if (error instanceof Error) {
