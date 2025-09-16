@@ -59,6 +59,7 @@ export default function CircleDiagram({
         width: window.innerWidth - 400, // - 400 width to make space for the sidebar on the left
         height: window.innerHeight - 64, // - 64 height to correct for the top and bottom margin
     });
+    const [hoverLabelScale, setHoverLabelScale] = useState<number>(1);
 
     useEffect(() => {
         const handleResize = () => {
@@ -66,6 +67,7 @@ export default function CircleDiagram({
                 width: window.innerWidth - 400,
                 height: window.innerHeight - 64,
             });
+            setHoverLabelScale(1);
         };
 
         window.addEventListener('resize', handleResize);
@@ -73,6 +75,16 @@ export default function CircleDiagram({
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+    const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+        const zoomFactor = 1.1;
+
+        if (e.deltaY < 0) {
+            setHoverLabelScale((prevHoverLabelScale) => prevHoverLabelScale / zoomFactor);
+        } else {
+            setHoverLabelScale((prevHoverLabelScale) => prevHoverLabelScale * zoomFactor);
+        }
+    };
 
     const openFileInCodeEditor = (path: string) => {
         document.body.style.cursor = 'wait';
@@ -240,6 +252,7 @@ export default function CircleDiagram({
     return (
         <div className="relative m-8">
             <SVGWithPanAndZoom
+                onWheel={handleWheel}
                 viewBox={`0 0 ${svgSize.width} ${svgSize.height}`}
                 className="rounded-xl border border-gray-600"
             >
@@ -268,7 +281,7 @@ export default function CircleDiagram({
                                     r={n.r}
                                     fill={DIRECTORY_FILL_COLOR}
                                     stroke={DIRECTORY_OUTLINE_COLOR}
-                                    strokeWidth={1}
+                                    strokeWidth={1 * hoverLabelScale}
                                     onDoubleClick={(event) => {
                                         event.preventDefault();
                                         openFileInCodeEditor(
@@ -333,7 +346,7 @@ export default function CircleDiagram({
                                         stroke={
                                             isHoveringThis || activeFiles.has(piece.filePath) ? 'blue' : 'transparent'
                                         }
-                                        strokeWidth={isHoveringThis ? 2 : 1}
+                                        strokeWidth={isHoveringThis ? 2 * hoverLabelScale : 1 * hoverLabelScale}
                                         onDoubleClick={(event) => {
                                             event.preventDefault();
                                             openFileInCodeEditor(visualizerConfig.repoPath + '/' + piece.filePath);
@@ -355,15 +368,20 @@ export default function CircleDiagram({
                                     {(activeFiles.has(piece.filePath) || hoveredFilePath === piece.filePath) && (
                                         <g className="pointer-events-none">
                                             <rect
-                                                x={-10}
-                                                y={-16}
-                                                width={20}
-                                                height={14}
-                                                rx={4}
+                                                x={-15 * hoverLabelScale}
+                                                y={-24 * hoverLabelScale}
+                                                width={30 * hoverLabelScale}
+                                                height={21 * hoverLabelScale}
+                                                rx={6 * hoverLabelScale}
                                                 fill="black"
                                                 fillOpacity="50%"
                                             />
-                                            <text fontSize={9} fill="#fff" textAnchor="middle" dy={-6}>
+                                            <text
+                                                fontSize={13.5 * hoverLabelScale}
+                                                fill="#fff"
+                                                textAnchor="middle"
+                                                dy={-9 * hoverLabelScale}
+                                            >
                                                 {piece.gitHistory.length}
                                             </text>
                                         </g>
@@ -388,7 +406,7 @@ export default function CircleDiagram({
                                           : '#666'
                                 }
                                 strokeOpacity="30%"
-                                strokeWidth={1.5}
+                                strokeWidth={2 * hoverLabelScale}
                             />
                         </g>
                     ))}
@@ -400,15 +418,22 @@ export default function CircleDiagram({
                     {linesBetweenCircles.map((line, i) => (
                         <g key={`changed-together-count-${i}`} className="pointer-events-none">
                             <rect
-                                x={line.x2 - 10}
-                                y={line.y2 - 16}
-                                width={20}
-                                height={14}
-                                rx={4}
+                                x={line.x2 - 15 * hoverLabelScale}
+                                y={line.y2 - 24 * hoverLabelScale}
+                                width={30 * hoverLabelScale}
+                                height={21 * hoverLabelScale}
+                                rx={6 * hoverLabelScale}
                                 fill="black"
                                 fillOpacity="50%"
                             />
-                            <text x={line.x2} y={line.y2} fontSize={9} fill="#fff" textAnchor="middle" dy={-6}>
+                            <text
+                                x={line.x2}
+                                y={line.y2}
+                                fontSize={13.5 * hoverLabelScale}
+                                fill="#fff"
+                                textAnchor="middle"
+                                dy={-9 * hoverLabelScale}
+                            >
                                 {line.count}
                             </text>
                         </g>
